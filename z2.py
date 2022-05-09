@@ -13,9 +13,9 @@ class Node:
         self.sending = False
         self.collision_detected = False
 
-    def wait(self):
+    def wait(self, length):
         self.collisions += 1
-        self.wait_time = random.randrange(0, 2 ** self.collisions)
+        self.wait_time = random.randrange(0, 2 ** min(self.collisions, 10)*length)
 
     def get_state(self):
         if self.sending:
@@ -80,7 +80,7 @@ class Wire:
                     node.sending = False
                     if node.collision_detected:
                         node.collision_detected = False
-                        node.wait()
+                        node.wait(self.length)
                     else:
                         node.collisions = 0
                 else:
