@@ -2,7 +2,7 @@ import libscrc
 import argparse
 
 FLAG = '01111110'
-frame_size = 64
+frame_size = 100
 
 
 def gen_crc(message):
@@ -15,6 +15,7 @@ def slice_data(data):
         a = data[:frame_size]
         data = data[frame_size:]
         result.append(a)
+    print(f'{len(result)} frames encoded')
     return result
 
 
@@ -27,18 +28,26 @@ def encode(data):
 
 
 def decode(data):
-    sliced_data = data.split(FLAG)
     result = ""
-    for i, frame in enumerate(sliced_data):
-        if i % 2 == 0:
-            continue
-        frame = frame.replace('111110', '11111')
-        message = frame[:-8]
-        crc = frame[-8:]
-        if crc != gen_crc(message):
-            print("CRC error")
-            exit(0)
-        result += message
+    frames = 0
+    while True:
+        if data[:len(FLAG)] == FLAG:
+            data = data[len(FLAG):]
+            frame = ''
+            if len(data) == 0:
+                break
+            while data[:len(FLAG)] != FLAG:
+                frame += data[0]
+                data = data[1:]
+            frame = frame.replace('111110', '11111')
+            message = frame[:-8]
+            crc = frame[-8:]
+            if crc != gen_crc(message):
+                continue
+            result += message
+            frames += 1
+    print(f'{frames} frames decoded')
+
     return result
 
 
@@ -51,7 +60,7 @@ def main():
     args = parser.parse_args()
 
     global frame_size
-    frame_size = args.frame_size
+    frame_size = int(args.frame_size)
     mode = args.mode
     with open(args.input, 'r') as input_file:
         data = input_file.readline()

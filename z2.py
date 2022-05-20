@@ -1,7 +1,5 @@
 import random
-from functools import reduce
 from time import sleep
-from copy import deepcopy
 
 
 class Node:
@@ -15,7 +13,7 @@ class Node:
 
     def wait(self, length):
         self.collisions += 1
-        self.wait_time = random.randrange(0, 2 ** min(self.collisions, 10)*length)
+        self.wait_time = random.randrange(0, 2 ** min(self.collisions, 10))*length
 
     def get_state(self):
         if self.sending:
@@ -72,7 +70,7 @@ class Wire:
                     if not self.messages[node.pos]:
                         node.sending = True
                         self.messages[node.pos].append(Message(node, 0))
-                        node.wait_time = 2 * self.length - 2
+                        node.wait_time = 2 * self.length
                 else:
                     node.wait_time -= 1
             else:
@@ -80,18 +78,18 @@ class Wire:
                     node.sending = False
                     if node.collision_detected:
                         node.collision_detected = False
-                        node.wait(self.length)
+                        node.wait(self.length * 2)
                     else:
                         node.collisions = 0
                 else:
                     if (not node.collision_detected) and len(self.messages[node.pos]) > 0:
                         node.collision_detected = True
-                        node.wait_time = 2 * self.length - 2
+                        node.wait_time = 2 * self.length
                     self.messages[node.pos].append(Message(node, 0))
                     node.wait_time -= 1
 
     def __str__(self):
-        full_message = str(self.iter) + ' |'
+        full_message = ' |'
         for i in range(self.length):
             message_val = ''
             for message in self.messages[i]:
@@ -119,4 +117,3 @@ if __name__ == "__main__":
             print('\r' + str(wire), end='')
             f.write(str(wire) + '\n')
             sleep(0.1)
-
